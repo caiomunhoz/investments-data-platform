@@ -6,8 +6,8 @@ locals {
       environment = {}
     }
     "ingest-negotiation-notes" = {
-      timeout     = 300
-      memory_size = 128
+      timeout     = 60
+      memory_size = 256
       environment = {
         SOURCES__OUTLOOK_INBOX__SECRET_ID = data.aws_secretsmanager_secret.outlook_cached_token.arn
       }
