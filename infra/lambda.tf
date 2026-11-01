@@ -1,3 +1,16 @@
+locals {
+  lambda_functions = {
+    "ingest-binance-trades" = {
+      timeout     = 60
+      memory_size = 128
+    }
+    "ingest-negotiation-notes" = {
+      timeout     = 300
+      memory_size = 128
+    }
+  }
+}
+
 data "aws_iam_policy_document" "lambda_assume_role" {
   statement {
     effect = "Allow"
@@ -30,7 +43,7 @@ data "aws_iam_policy_document" "lambda_ingestion_policy" {
   statement {
     effect    = "Allow"
     actions   = ["ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer"]
-    resources = [aws_ecr_repository.lambda_ingest_binance_trades.arn]
+    resources = values(aws_ecr_repository.lambda)[*].arn
   }
 
   statement {
@@ -43,6 +56,18 @@ data "aws_iam_policy_document" "lambda_ingestion_policy" {
     effect    = "Allow"
     actions   = ["secretsmanager:GetSecretValue"]
     resources = ["arn:aws:secretsmanager:*:*:secret:dlt/*"]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["secretsmanager:ListSecrets"]
+    resources = ["*"]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["secretsmanager:PutSecretValue"]
+    resources = ["arn:aws:secretsmanager:*:*:secret:dlt/sources/outlook_inbox/cached_token-*"]
   }
 }
 
@@ -57,11 +82,19 @@ resource "aws_iam_role_policy" "lambda_ingestion_role_policy" {
   policy = data.aws_iam_policy_document.lambda_ingestion_policy.json
 }
 
-resource "aws_lambda_function" "ingest_binance_trades_function" {
-  function_name = "investments-data-platform-ingest-binance-trades"
+resource "aws_lambda_function" "lambda" {
+  for_each = local.lambda_functions
+
+  function_name = "investments-data-platform-${each.key}"
   package_type  = "Image"
-  timeout       = 60
-  image_uri     = "${aws_ecr_repository.lambda_ingest_binance_trades.repository_url}@${data.aws_ecr_image.ingest_binance_trades.image_digest}"
+  timeout       = each.value.timeout
+  memory_size   = each.value.memory_size
+  image_uri     = "${aws_ecr_repository.lambda[each.key].repository_url}@${data.aws_ecr_image.lambda[each.key].image_digest}"
   role          = aws_iam_role.lambda_ingestion_role.arn
   publish       = true
+}
+
+moved {
+  from = aws_lambda_function.ingest_binance_trades_function
+  to   = aws_lambda_function.lambda["ingest-binance-trades"]
 }

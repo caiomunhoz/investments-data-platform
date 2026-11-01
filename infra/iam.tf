@@ -16,7 +16,10 @@ data "aws_iam_policy_document" "gh_actions_oidc_assume_role_policy" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:caiomunhoz*/investments-data-platform*:ref:refs/heads/main"]
+      values = [
+        "repo:caiomunhoz*/investments-data-platform*:ref:refs/heads/main",
+        "repo:caiomunhoz*/investments-data-platform*:environment:terraform-apply"
+      ]
     }
   }
 }
@@ -32,7 +35,7 @@ data "aws_iam_policy_document" "ecr_push_policy" {
       "ecr:UploadLayerPart",
       "ecr:CompleteLayerUpload"
     ]
-    resources = [aws_ecr_repository.lambda_ingest_binance_trades.arn]
+    resources = values(aws_ecr_repository.lambda)[*].arn
   }
 
   statement {

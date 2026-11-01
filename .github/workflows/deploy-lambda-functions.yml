@@ -40,6 +40,13 @@ jobs:
               - apps/lakehouse/ingestion/**
               - apps/lakehouse/lambda/Dockerfile
               - apps/lakehouse/lambda/ingest-binance-trades/**
+            ingest-negotiation-notes:
+              - .github/workflows/deploy-lambda-functions.yml
+              - pyproject.toml
+              - uv.lock
+              - apps/lakehouse/ingestion/**
+              - apps/lakehouse/lambda/Dockerfile
+              - apps/lakehouse/lambda/ingest-negotiation-notes/**
 
   build-and-push-docker-images:
     name: Build and Push Docker Images
