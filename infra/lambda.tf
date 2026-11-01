@@ -3,12 +3,20 @@ locals {
     "ingest-binance-trades" = {
       timeout     = 60
       memory_size = 128
+      environment = {}
     }
     "ingest-negotiation-notes" = {
       timeout     = 300
       memory_size = 128
+      environment = {
+        SOURCES__OUTLOOK_INBOX__SECRET_ID = data.aws_secretsmanager_secret.outlook_cached_token.arn
+      }
     }
   }
+}
+
+data "aws_secretsmanager_secret" "outlook_cached_token" {
+  name = "dlt/sources/outlook_inbox/cached_token"
 }
 
 data "aws_iam_policy_document" "lambda_assume_role" {
@@ -67,7 +75,7 @@ data "aws_iam_policy_document" "lambda_ingestion_policy" {
   statement {
     effect    = "Allow"
     actions   = ["secretsmanager:PutSecretValue"]
-    resources = ["arn:aws:secretsmanager:*:*:secret:dlt/sources/outlook_inbox/cached_token-*"]
+    resources = [data.aws_secretsmanager_secret.outlook_cached_token.arn]
   }
 }
 
@@ -92,4 +100,12 @@ resource "aws_lambda_function" "lambda" {
   image_uri     = "${aws_ecr_repository.lambda[each.key].repository_url}@${data.aws_ecr_image.lambda[each.key].image_digest}"
   role          = aws_iam_role.lambda_ingestion_role.arn
   publish       = true
+
+  dynamic "environment" {
+    for_each = length(each.value.environment) > 0 ? [each.value.environment] : []
+
+    content {
+      variables = environment.value
+    }
+  }
 }

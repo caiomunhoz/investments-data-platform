@@ -8,6 +8,11 @@ on:
       - .github/workflows/terraform-plan-and-apply.yml
       - infra/**
   workflow_call:
+    inputs:
+      after-lambda-deploy:
+        description: Set by the Lambda deploy workflow; bypasses the Lambda changes gate.
+        type: boolean
+        default: true
   workflow_dispatch:
 
 concurrency:
@@ -25,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      skip: ${{ github.event_name == 'push' && steps.filter.outputs.lambda == 'true' }}
+      skip: ${{ github.event_name == 'push' && !inputs.after-lambda-deploy && steps.filter.outputs.lambda == 'true' }}
 
     steps:
       - name: Checkout repository

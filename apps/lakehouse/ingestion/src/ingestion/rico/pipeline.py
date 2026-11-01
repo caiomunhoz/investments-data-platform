@@ -9,8 +9,7 @@ from .pdf_parser import parse_note
 def outlook_inbox_source(
     client_id: str = dlt.secrets.value,
     email_account: str = dlt.secrets.value,
-    secret_id: str = dlt.secrets.value,
-    cached_token: str = dlt.secrets.value,
+    secret_id: str = dlt.config.value,
     pdf_password: str = dlt.secrets.value,
 ):
     config: RESTAPIConfig = {
@@ -18,9 +17,7 @@ def outlook_inbox_source(
             "base_url": "https://graph.microsoft.com/v1.0/me",
             "auth": {
                 "type": "bearer",
-                "token": get_access_token(
-                    client_id, email_account, secret_id, cached_token
-                ),
+                "token": get_access_token(client_id, email_account, secret_id),
             },
         },
         "resource_defaults": {

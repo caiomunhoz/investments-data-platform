@@ -2,14 +2,12 @@ import msal
 import boto3
 
 
-def get_access_token(
-    client_id: str,
-    email_account: str,
-    secret_id: str,
-    cached_token: str,
-) -> str:
+def get_access_token(client_id: str, email_account: str, secret_id: str) -> str:
+    secrets_client = boto3.client("secretsmanager")
     cache = msal.SerializableTokenCache()
-    cache.deserialize(cached_token)
+    cache.deserialize(
+        secrets_client.get_secret_value(SecretId=secret_id)["SecretString"]
+    )
 
     app = msal.ConfidentialClientApplication(
         client_id,
@@ -23,13 +21,9 @@ def get_access_token(
         ["https://outlook.office.com/IMAP.AccessAsUser.All"], account=accounts[0]
     )
 
-    _update_cached_token(secret_id, cache)
-
-    return result["access_token"]
-
-
-def _update_cached_token(secret_id: str, cache: msal.SerializableTokenCache) -> None:
     if cache.has_state_changed:
-        boto3.client("secretsmanager").put_secret_value(
+        secrets_client.put_secret_value(
             SecretId=secret_id, SecretString=cache.serialize()
         )
+
+    return result["access_token"]
