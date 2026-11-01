@@ -20,13 +20,3 @@ data "aws_ecr_image" "lambda" {
   repository_name = each.value.name
   most_recent     = true
 }
-
-moved {
-  from = aws_ecr_repository.lambda_ingest_binance_trades
-  to   = aws_ecr_repository.lambda["ingest-binance-trades"]
-}
-
-moved {
-  from = aws_ecr_repository.lambda_ingest_negotiation_notes
-  to   = aws_ecr_repository.lambda["ingest-negotiation-notes"]
-}

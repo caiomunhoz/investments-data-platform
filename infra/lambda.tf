@@ -93,8 +93,3 @@ resource "aws_lambda_function" "lambda" {
   role          = aws_iam_role.lambda_ingestion_role.arn
   publish       = true
 }
-
-moved {
-  from = aws_lambda_function.ingest_binance_trades_function
-  to   = aws_lambda_function.lambda["ingest-binance-trades"]
-}
