@@ -45,6 +45,7 @@ def outlook_inbox_source(
             {
                 "name": "negotiation_notes",
                 "parallelized": True,
+                "max_table_nesting": 0,
                 "endpoint": {
                     "path": "messages/{resources.messages.id}/attachments",
                     "params": {
