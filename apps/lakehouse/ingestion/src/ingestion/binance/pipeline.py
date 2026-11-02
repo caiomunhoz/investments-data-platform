@@ -31,7 +31,6 @@ def binance_source(
         "resources": [
             {
                 "name": "withdrawals",
-                "write_disposition": "merge",
                 "endpoint": {
                     "path": "sapi/v1/capital/withdraw/history",
                     "params": {
