@@ -22,9 +22,6 @@ def outlook_inbox_source(
         },
         "resource_defaults": {
             "primary_key": "id",
-            "endpoint": {
-                "paginator": "single_page",
-            },
         },
         "resources": [
             {
@@ -33,18 +30,27 @@ def outlook_inbox_source(
                 "endpoint": {
                     "path": "mailFolders/inbox/messages",
                     "params": {
-                        "$select": "id",
+                        "$top": 50,
+                        "$select": "id,receivedDateTime",
                         "$filter": (
                             "from/emailAddress/address eq 'noreply@rico.com.vc' "
                             "and subject eq 'Rico | Nota de Negociação' "
-                            "and hasAttachments eq true"
+                            "and hasAttachments eq true "
+                            "and receivedDateTime gt {incremental.start_value}"
                         ),
+                    },
+                    "incremental": {
+                        "cursor_path": "receivedDateTime",
+                        "initial_value": "1970-01-01T00:00:00Z",
+                    },
+                    "paginator": {
+                        "type": "json_link",
+                        "next_url_path": "['@odata.nextLink']",
                     },
                 },
             },
             {
                 "name": "negotiation_notes",
-                "write_disposition": "merge",
                 "parallelized": True,
                 "endpoint": {
                     "path": "messages/{resources.messages.id}/attachments",
@@ -55,6 +61,7 @@ def outlook_inbox_source(
                             "and startsWith(name, 'NotaNegociacao')"
                         ),
                     },
+                    "paginator": "single_page",
                 },
                 "processing_steps": [
                     {"map": lambda record: parse_note(record, pdf_password)},

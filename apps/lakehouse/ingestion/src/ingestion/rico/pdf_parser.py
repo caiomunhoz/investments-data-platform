@@ -31,7 +31,7 @@ def parse_note(record: dict, password: str) -> dict:
             raise ValueError(f"Header not found in attachment {record['id']}")
 
         trades = [trade for page in pdf.pages for trade in _parse_trades(page)]
-        # Only the last page of a multi-page note carries the final financial summary.
+
         gross, net = _parse_financial_summary(pdf.pages[-1])
 
     return {
