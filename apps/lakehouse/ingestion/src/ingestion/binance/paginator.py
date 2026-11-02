@@ -14,7 +14,9 @@ class WindowPaginator(BasePaginator):
         self._window_start: pendulum.DateTime | None = None
 
     def init_request(self, request: Request) -> None:
-        self._window_start = pendulum.from_timestamp(request.params["startTime"] / 1000)
+        self._window_start = pendulum.from_timestamp(
+            int(request.params["startTime"]) / 1000
+        )
         self.update_request(request)
 
     def update_state(self, response: Response, data: Optional[Any] = None) -> None:
