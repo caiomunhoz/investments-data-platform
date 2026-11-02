@@ -7,13 +7,6 @@ from .paginator import WindowPaginator
 from .utils import datetime_to_utc_ms
 
 
-def parse_datetimes(record: dict) -> dict:
-    record["applyTime"] = pendulum.parse(record["applyTime"], tz="UTC")
-    record["completeTime"] = pendulum.parse(record["completeTime"], tz="UTC")
-
-    return record
-
-
 @dlt.source(name="binance")
 def binance_source(
     symbols: list[str],
@@ -38,16 +31,16 @@ def binance_source(
                         "startTime": "{incremental.start_value}",
                     },
                     "incremental": {
-                        "cursor_path": "completeTime",
-                        "initial_value": pendulum.datetime(2025, 12, 1),
-                        "lag": pendulum.duration(months=1).in_seconds(),
-                        "convert": datetime_to_utc_ms,
+                        "cursor_path": "applyTime",
+                        "initial_value": "2025-12-01 00:00:00",
+                        "convert": lambda x: datetime_to_utc_ms(
+                            pendulum.parse(x)
+                        ),
                     },
                     "paginator": WindowPaginator(
                         window_size=pendulum.duration(months=1)
                     ),
                 },
-                "processing_steps": [{"map": parse_datetimes}],
             },
             *[
                 {
