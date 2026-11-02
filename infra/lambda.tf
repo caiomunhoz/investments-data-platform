@@ -1,6 +1,6 @@
 locals {
   lambda_functions = {
-    "ingest-binance-trades" = {
+    "ingest-binance-data" = {
       timeout     = 60
       memory_size = 128
       environment = {}

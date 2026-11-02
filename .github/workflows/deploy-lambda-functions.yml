@@ -33,13 +33,13 @@ jobs:
         id: changes
         with:
           filters: |
-            ingest-binance-trades:
+            ingest-binance-data:
               - .github/workflows/deploy-lambda-functions.yml
               - pyproject.toml
               - uv.lock
               - apps/lakehouse/ingestion/**
               - apps/lakehouse/lambda/Dockerfile
-              - apps/lakehouse/lambda/ingest-binance-trades/**
+              - apps/lakehouse/lambda/ingest-binance-data/**
             ingest-negotiation-notes:
               - .github/workflows/deploy-lambda-functions.yml
               - pyproject.toml
