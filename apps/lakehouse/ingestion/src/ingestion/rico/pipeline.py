@@ -44,6 +44,7 @@ def outlook_inbox_source(
             },
             {
                 "name": "negotiation_notes",
+                "write_disposition": "merge",
                 "parallelized": True,
                 "endpoint": {
                     "path": "messages/{resources.messages.id}/attachments",

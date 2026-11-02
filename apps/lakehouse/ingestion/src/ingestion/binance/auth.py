@@ -6,6 +6,8 @@ from cryptography.hazmat.primitives import serialization
 from dlt.common.configuration import configspec
 from dlt.sources.helpers.rest_client.auth import AuthConfigBase
 
+from .utils import datetime_to_utc_ms
+
 
 @configspec
 class BinanceAuth(AuthConfigBase):
@@ -21,7 +23,7 @@ class BinanceAuth(AuthConfigBase):
         sorted_query = urlencode(
             sorted(
                 parse_qsl(url.query)
-                + [("timestamp", pendulum.now("UTC").int_timestamp * 1000)]
+                + [("timestamp", datetime_to_utc_ms(pendulum.now("UTC")))]
             )
         )
 

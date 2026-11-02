@@ -1,7 +1,10 @@
+import pendulum
 import dlt
 from dlt.sources.rest_api import RESTAPIConfig, rest_api_resources
 
 from .auth import BinanceAuth
+from .paginator import WindowPaginator
+from .utils import datetime_to_utc_ms
 
 
 @dlt.source(name="binance")
@@ -12,30 +15,63 @@ def binance_source(
 ):
     config: RESTAPIConfig = {
         "client": {
-            "base_url": "https://api.binance.com/api/v3",
+            "base_url": "https://api.binance.com",
             "auth": BinanceAuth(api_key, private_key),
+        },
+        "resource_defaults": {
+            "primary_key": "id",
         },
         "resources": [
             {
-                "name": f"trades_{symbol.lower()}",
-                "table_name": "trades",
-                "primary_key": "id",
-                "parallelized": True,
+                "name": "withdrawals",
+                "write_disposition": "merge",
                 "endpoint": {
-                    "path": "myTrades",
-                    "paginator": "single_page",
+                    "path": "sapi/v1/capital/withdraw/history",
                     "params": {
-                        "symbol": symbol,
-                        "fromId": "{incremental.start_value}",
-                        "limit": 1000,
+                        "status": 6,
+                        "startTime": "{incremental.start_value}",
                     },
                     "incremental": {
-                        "cursor_path": "id",
-                        "initial_value": 0,
+                        "cursor_path": "completeTime",
+                        "initial_value": pendulum.datetime(2025, 12, 1),
+                        "lag": pendulum.duration(months=1).in_seconds(),
+                        "convert": datetime_to_utc_ms,
                     },
+                    "paginator": WindowPaginator(
+                        window_size=pendulum.duration(months=1)
+                    ),
                 },
-            }
-            for symbol in symbols
+                "processing_steps": [
+                    {
+                        "map": lambda record: record.update(
+                            {
+                                "completeTime": pendulum.parse(record["completeTime"]),
+                                "applyTime": pendulum.parse(record["applyTime"]),
+                            }
+                        )
+                    }
+                ],
+            },
+            *[
+                {
+                    "name": f"trades_{symbol.lower()}",
+                    "table_name": "trades",
+                    "parallelized": True,
+                    "endpoint": {
+                        "path": "api/v3/myTrades",
+                        "params": {
+                            "symbol": symbol,
+                            "fromId": "{incremental.start_value}",
+                        },
+                        "incremental": {
+                            "cursor_path": "id",
+                            "initial_value": 0,
+                        },
+                        "paginator": "single_page",
+                    },
+                }
+                for symbol in symbols
+            ],
         ],
     }
 
