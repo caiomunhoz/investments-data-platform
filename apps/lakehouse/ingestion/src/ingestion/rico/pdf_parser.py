@@ -1,10 +1,10 @@
 import re
 from base64 import b64decode
-from io import BytesIO
 from decimal import Decimal
+from io import BytesIO
 
-import pendulum
 import pdfplumber
+import pendulum
 from pdfplumber.page import Page
 
 _HEADER_RE = re.compile(

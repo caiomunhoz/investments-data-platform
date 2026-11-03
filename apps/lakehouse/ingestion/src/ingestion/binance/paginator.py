@@ -1,8 +1,8 @@
-from typing import Any, Optional
+from typing import Any
 
 import pendulum
+from dlt.sources.helpers.requests import Request, Response
 from dlt.sources.helpers.rest_client.paginators import BasePaginator
-from dlt.sources.helpers.requests import Response, Request
 
 from .utils import datetime_to_utc_ms
 
@@ -19,7 +19,7 @@ class WindowPaginator(BasePaginator):
         )
         self.update_request(request)
 
-    def update_state(self, response: Response, data: Optional[Any] = None) -> None:
+    def update_state(self, response: Response, data: Any | None = None) -> None:
         self._window_start += self._window_size
         self._has_next_page = self._window_start < pendulum.now("UTC")
 

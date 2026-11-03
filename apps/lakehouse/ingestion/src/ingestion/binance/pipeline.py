@@ -1,5 +1,5 @@
-import pendulum
 import dlt
+import pendulum
 from dlt.sources.rest_api import RESTAPIConfig, rest_api_resources
 
 from .auth import BinanceAuth
@@ -33,9 +33,7 @@ def binance_source(
                     "incremental": {
                         "cursor_path": "applyTime",
                         "initial_value": "2025-12-01 00:00:00",
-                        "convert": lambda x: datetime_to_utc_ms(
-                            pendulum.parse(x)
-                        ),
+                        "convert": lambda x: datetime_to_utc_ms(pendulum.parse(x)),
                     },
                     "paginator": WindowPaginator(
                         window_size=pendulum.duration(months=1)

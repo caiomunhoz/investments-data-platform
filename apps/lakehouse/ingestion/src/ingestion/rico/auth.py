@@ -1,5 +1,5 @@
-import msal
 import boto3
+import msal
 
 
 def get_access_token(client_id: str, email_account: str, secret_id: str) -> str:
