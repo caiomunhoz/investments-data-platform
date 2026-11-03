@@ -15,5 +15,6 @@ ingestion = { workspace = true }
 
 [dependency-groups]
 dev = [
+    "pre-commit>=4.7.0",
     "ruff>=0.16.7",
 ]
